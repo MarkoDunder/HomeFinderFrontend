@@ -1,15 +1,29 @@
-import React from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { Text, View } from 'react-native';
-import { Link } from 'expo-router';
+import React from "react";
+import { StatusBar } from "expo-status-bar";
+import { ScrollView, Text, View, Image } from "react-native";
+import { Link, router } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { images } from "../constants";
+import CustomButton from "../components/CustomButton";
 
 export default function App() {
   return (
-    <View className="flex-1 items-center justify-center bg-white">
-      <Text className = "text-2xl font-pblack"> Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-      <Link href = "/home"> Home </Link>
-    </View>
+    <SafeAreaView className=" bg-white h-full">
+      <ScrollView contentContainerStyle={{ height: "70%" }}>
+        <View className="w-full justify-center items-center h-full px-4 mt-10 ">
+          <Image
+            source={images.homeLogo}
+            className="w-[200px] h-[150px]"
+            resizeMode="contain"
+          />
+
+          <CustomButton
+            title="Continue with Email"
+            handlePress={() => router.push("/sign-in")}
+            containerStyles="w-full mt-7"
+          />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
-
