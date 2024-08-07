@@ -1,11 +1,15 @@
-import { useState } from "react";
+import { useState, SyntheticEvent } from "react";
 import { Link, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { View, Text, ScrollView, Dimensions, Alert, Image } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
 import { images } from "../../constants";
 import CustomButton from "../../components/CustomButton";
 import FormField from "../../components/FormField";
+
+const BACKEND_API_URL = "http://localhost:3001/api/v1";
 
 const SignIn = () => {
   //const { setUser, setIsLogged } = useGlobalContext();
@@ -15,7 +19,11 @@ const SignIn = () => {
     password: "",
   });
 
-  const submit = async () => {
+  const handleChangeText = (name, value) => {
+    setForm({ ...form, [name]: value });
+  };
+
+  const submit = async (e) => {
     if (form.email === "" || form.password === "") {
       Alert.alert("Error", "Please fill in all fields");
     }
@@ -23,11 +31,29 @@ const SignIn = () => {
     setSubmitting(true);
 
     try {
-      // Assuming submission logic is successful
-      // Redirect to home page inside tabs directory
+      const response = await axios.post(
+        `${BACKEND_API_URL}/auth/login`,
+        form,
+        {
+          email: form.email,
+          password: form.password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const { token, firstName } = response.data;
+
+      await AsyncStorage.setItem("jwt_token", token); // Save token in local storage
+      await AsyncStorage.setItem("user_name", firstName); // Save user name in local storage
+
+      // Navigate to the home page
       router.push("/(tabs)/home"); // Navigate to home page
     } catch (error) {
       // Handle any errors from submission
+      console.error(error);
       Alert.alert("Error", "Something went wrong. Please try again.");
     } finally {
       setSubmitting(false); // Always reset the submitting state
@@ -59,7 +85,7 @@ const SignIn = () => {
           <FormField
             title="Email"
             value={form.email}
-            handleChangeText={(e) => setForm({ ...form, email: e })}
+            handleChangeText={(value) => handleChangeText("email", value)}
             otherStyles="mt-7"
             keyboardType="email-address"
           />
@@ -67,8 +93,9 @@ const SignIn = () => {
           <FormField
             title="Password"
             value={form.password}
-            handleChangeText={(e) => setForm({ ...form, password: e })}
+            handleChangeText={(value) => handleChangeText("password", value)}
             otherStyles="mt-7"
+            secureTextEntry
           />
 
           <CustomButton
